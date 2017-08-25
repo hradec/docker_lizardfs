@@ -1,15 +1,50 @@
 #!/bin/bash
 
-echo "container IP: $(ifconfig eth0 | grep 'inet ' | awk '{print $2}')" 
+run(){
+	echo $@
+	$@
+}
+
+echo "====================================================================================================="
+echo -e "container IP: $(ifconfig eth0 | grep 'inet ' | awk '{print $2}')\n" 
 
 if [ "$SSH_PORT" != "" ] ; then 
 	/sbin/sshd -p $SSH_PORT &
 fi
 
-if [ ! -f /var/lib/mfs/metadata.mfs ] ; then 
-	cp /var/lib/mfs/metadata.mfs.empty /var/lib/mfs/metadata.mfs
+
+# set master address
+# ====================================================================================
+if [ "$MASTER_HOST" != "" ] ; then 
+	export MFSMASTER=$MASTER_HOST
+fi
+if [ "$MASTER_PORT" != "" ] ; then 
+	export MFSMASTER_PORT=$MASTER_PORT
+fi
+if [ "$MFSMASTER" != "" ] ; then 
+	echo "$MFSMASTER	mfsmaster" >> /etc/hosts
+fi
+if [ "$MFSMASTER_PORT" == "" ] ; then 
+	export MFSMASTER_PORT=9419
 fi
 
+# set master address
+# ====================================================================================
+echo "MASTER_HOST = mfsmaster" 		>> /etc/mfs/mfschunkserver.cfg
+echo "MASTER_PORT = $MFSMASTER_PORT" 	>> /etc/mfs/mfschunkserver.cfg
+
+echo "MASTER_HOST = mfsmaster" 		>> /etc/mfs/mfsmaster.cfg
+echo "MASTER_PORT = $MFSMASTER_PORT" 	>> /etc/mfs/mfsmaster.cfg
+
+echo "MASTER_HOST = mfsmaster" 		>> /etc/mfs/mfsmetalogger.cfg
+echo "MASTER_PORT = $MFSMASTER_PORT" 	>> /etc/mfs/mfsmetalogger.cfg
+
+
+# if no /var/lib/mfs/metadata.mfs, we have to initiate a new one! (new install!)
+# ====================================================================================
+if [ ! -f /var/lib/mfs/metadata.mfs ] ; then 
+	cp /etc/mfs/metadata.mfs.empty /var/lib/mfs/metadata.mfs
+fi
 
 # auto use whatever volume set in /mnt/
 # ====================================================================================
@@ -23,38 +58,54 @@ done
 
 # ACTION - actions set by ACTION env var!
 # ====================================================================================
-if [ "$ACTION" == "" ] ; then 
-	echo "\
-	
+if [ "$ACTION" == "chunk" ] ; then 
+	run mfschunkserver -d start
+
+elif [ "$ACTION" == "master" ] ; then 
+	echo "PERSONALITY = master" >> /etc/mfs/mfsmaster.cfg
+	run mfsmaster -d start
+
+elif [ "$ACTION" == "shadow" ] ; then 
+	echo "PERSONALITY = shadow" >> /etc/mfs/mfsmaster.cfg
+	run mfsmaster -d start
+
+elif [ "$ACTION" == "meta" ] ; then 
+	run mfsmetalogger -d
+
+elif [ "$ACTION" == "cgi" ] ; then 
+	extra=""
+	[ "$PORT" != "" ] && extra=" -P $PORT"
+	run /usr/sbin/lizardfs-cgiserver $extra
+else
+	echo -e "
+
+	Set MASTER_HOST env var to the IP Address of the LizardFS Master server
+	Set MASTER_PORT env var to the Port of the LizardFS Master server	
 	Set ACTION env var to trigger what type of server this docker should be:
 
-		-e ACTION=chunk -e MFSMASTER=<ip of lizardfs master server>   -> chunkserver
-		-e ACTION=master -> master server
-		-e ACTION=shadow -e MFSMASTER=<ip of lizardfs master server>   -> shadow server
-		-e ACTION=metalogger -e MFSMASTER=<ip of lizardfs master server>   -> metalogger server
-		-e ACTION=cgi -> cgi web server
+		master server: -e ACTION=master 
+		 chunk server: -e ACTION=chunk  -e MFSMASTER=<ip of lizardfs master server>  
+		shadow server: -e ACTION=shadow -e MFSMASTER=<ip of lizardfs master server>   
+	    metalogger server: -e ACTION=meta   -e MFSMASTER=<ip of lizardfs master server>  
+	       cgi web server: -e ACTION=cgi
 
+	Any volume mounted to /mnt will automatically be added as an Data Device for a chunk server, using something like: -v "/local_disk_to_use_as_chunk_disk/:/mnt/chunkDisk:rw" 
+
+	To store the data of each server locally, just mount a local folder to /var/lib/mfs, using something like: -v "/local_lizard_server_data_path/:/var/lib/mfs:rw"
+	
 	ex:
-		docker -e ACTION=chunk -e MFSMASTER=192.168.0.12  --net=host -v "/ZRAID/lizardfs_chunk1:/mnt/zraid:rw" --restart=always -d hradec/lizardfs:latest
+		docker run -d \\\\\n\
+			--restart=always \\\\\n\
+			--net=host \\\\\n\
+			-e ACTION=chunk \\\\\n\
+			-e MASTER_HOST=192.168.0.12 \\\\\n\
+			-v "/ZRAID/lizardfs_chunk1:/mnt/zraid:rw" \\\\\n\
+			-v "/ZRAID/lizardfs_data_chunkserver:/var/lib/mfs:rw"  \\\\\n\
+			hradec/lizardfs:latest
 
 	"
 	#/bin/bash 
+	echo "====================================================================================================="
 fi
 
-
-if [ "$ACTION" == "chunk" ] ; then 
-	echo "MASTER_HOST = $MFSMASTER" >> /etc/mfs/mfschunkserver.cfg
-	mfschunkserver -d start
-fi
-if [ "$ACTION" == "master" ] ; then 
-	mfsmaster -d start
-fi
-if [ "$ACTION" == "shadow" ] ; then 
-	echo "MASTER_HOST = $MFSMASTER" >> /etc/mfs/mfschunkserver.cfg
-	mfsmaster -d start
-fi
-if [ "$ACTION" == "meta" ] ; then 
-	echo "MASTER_HOST = $MFSMASTER" >> /etc/mfs/mfschunkserver.cfg
-	mfsmaster -d start
-fi
 

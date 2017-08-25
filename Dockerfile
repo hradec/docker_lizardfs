@@ -28,23 +28,28 @@ RUN \
 	echo "root:t" | chpasswd ;\
 	/usr/bin/ssh-keygen -A ;\
 	cp /etc/mfs/mfsexports.cfg.dist /etc/mfs/mfsexports.cfg ;\
-	echo "PERSONALITY = master" >> /etc/mfs/mfsmaster.cfg ;\
-	echo "WORKING_USER = root" >> /etc/mfs/mfsmaster.cfg ;\
-	echo "WORKING_GROUP = root" >> /etc/mfs/mfsmaster.cfg ;\
+	cp /var/lib/mfs/metadata.mfs.empty /etc/mfs/ ; \
+\
+	echo "PERSONALITY = master" 	>> /etc/mfs/mfsmaster.cfg ;\
+	echo "WORKING_USER = root" 	>> /etc/mfs/mfsmaster.cfg ;\
+	echo "WORKING_GROUP = root" 	>> /etc/mfs/mfsmaster.cfg ;\
+	echo "AUTO_RECOVERY = 1" 	>> /etc/mfs/mfsmaster.cfg ;\
 	echo "EXPORTS_FILENAME = /etc/mfs/mfsexports.cfg" >> /etc/mfs/mfsmaster.cfg ;\
-	echo "AUTO_RECOVERY = 1" >> /etc/mfs/mfsmaster.cfg ;\
 \
-	echo "LABEL = _"  >> /etc/mfs/mfsmaster.cfg ;\
-	echo "WORKING_USER = root"  >> /etc/mfs/mfsmaster.cfg ;\
-	echo "WORKING_GROUP = root"  >> /etc/mfs/mfsmaster.cfg ;\
-	echo "ENABLE_LOAD_FACTOR = 1"  >> /etc/mfs/mfsmaster.cfg ;\
-	echo "PERFORM_FSYNC = 0"  >> /etc/mfs/mfsmaster.cfg ;\
+	echo "LABEL = _"  		>> /etc/mfs/mfsmaster.cfg ;\
+	echo "WORKING_USER = root"  	>> /etc/mfs/mfsmaster.cfg ;\
+	echo "WORKING_GROUP = root"  	>> /etc/mfs/mfsmaster.cfg ;\
+	echo "ENABLE_LOAD_FACTOR = 1" 	>> /etc/mfs/mfsmaster.cfg ;\
+	echo "PERFORM_FSYNC = 0"  	>> /etc/mfs/mfsmaster.cfg ;\
 \
-        echo "LABEL = _ "  >> /etc/mfs/mfschunkserver.cfg ;\
-        echo "WORKING_USER = root "  >> /etc/mfs/mfschunkserver.cfg ;\
-        echo "WORKING_GROUP = root "  >> /etc/mfs/mfschunkserver.cfg ;\
+        echo "LABEL = _ "  		>> /etc/mfs/mfschunkserver.cfg ;\
+        echo "WORKING_USER = root "  	>> /etc/mfs/mfschunkserver.cfg ;\
+        echo "WORKING_GROUP = root "  	>> /etc/mfs/mfschunkserver.cfg ;\
         echo "ENABLE_LOAD_FACTOR = 1 "  >> /etc/mfs/mfschunkserver.cfg ;\
-        echo "PERFORM_FSYNC = 0 "  >> /etc/mfs/mfschunkserver.cfg 
+        echo "PERFORM_FSYNC = 0 "  	>> /etc/mfs/mfschunkserver.cfg ;\
+\
+        echo "WORKING_USER = root "  	>> /etc/mfs/mfsmetalogger.cfg ;\
+        echo "WORKING_GROUP = root "  	>> /etc/mfs/mfsmetalogger.cfg ;
 
 
 
