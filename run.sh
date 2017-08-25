@@ -114,7 +114,9 @@ else
 	Any volume mounted to /mnt will automatically be added as an Data Device for a chunk server, using something like: -v "/local_disk_to_use_as_chunk_disk/:/mnt/chunkDisk:rw" 
 
 	To store the data of each server locally, just mount a local folder to /var/lib/mfs, using something like: -v "/local_lizard_server_data_path/:/var/lib/mfs:rw"
-	
+
+	When starting a server, any env var prefixed with MFS_ will be used in the server cfg file. ex: -e ACTION=chunk -e MFS_LABEL=0 -> will put LABEL=0 into /etc/mfs/mfschunkserver.cfg 	
+
 	ex:
 		docker run -d \\\\\n\
 			--restart=always \\\\\n\
