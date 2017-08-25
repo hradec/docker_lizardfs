@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker build -t hradec/lizardfs .
+docker build -t hradec/docker_lizardfs .

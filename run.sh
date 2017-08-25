@@ -4,6 +4,24 @@ run(){
 	echo $@
 	$@
 }
+createCFG(){
+	file=/etc/mfs/mfsmaster.cfg
+	[ "$ACTION" == "chunk" ] && file=/etc/mfs/mfschunkserver.cfg
+	[ "$ACTION" == "meta" ] && file=/etc/mfs/mfsmetalogger.cfg
+	mv $file /tmp/__tmp__
+	for e in $(env | grep MFS_) ; do
+		e=$(echo $e | sed 's/MFS_//g')
+		en=$(echo $e | awk -F'=' '{print $1}')
+		ev=$(echo $e | awk -F'=' '{print $2}')
+		grep -v $en /tmp/__tmp__ > $file
+		echo "$en = $ev" >> $file
+		cp $file /tmp/__tmp__
+	done
+	echo "====================================================================================================="
+	echo "$file:"
+	cat $file | while read l ; do echo -e "\t$l" ; done
+	echo "====================================================================================================="
+}
 
 echo "====================================================================================================="
 echo -e "container IP: $(ifconfig eth0 | grep 'inet ' | awk '{print $2}')\n" 
@@ -15,6 +33,9 @@ fi
 
 # set master address
 # ====================================================================================
+default_port=9419
+[ "$ACTION" == "chunk" ] && default_port=9420
+
 if [ "$MASTER_HOST" != "" ] ; then 
 	export MFSMASTER=$MASTER_HOST
 fi
@@ -25,7 +46,7 @@ if [ "$MFSMASTER" != "" ] ; then
 	echo "$MFSMASTER	mfsmaster" >> /etc/hosts
 fi
 if [ "$MFSMASTER_PORT" == "" ] ; then 
-	export MFSMASTER_PORT=9419
+	export MFSMASTER_PORT=$default_port
 fi
 
 # set master address
@@ -58,6 +79,7 @@ done
 
 # ACTION - actions set by ACTION env var!
 # ====================================================================================
+createCFG
 if [ "$ACTION" == "chunk" ] ; then 
 	run mfschunkserver -d start
 
