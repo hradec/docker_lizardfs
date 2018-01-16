@@ -5,7 +5,7 @@ MAINTAINER hradec <hradec@hradec.com>
 # install needed packages
 RUN  	echo -e '\n\n[archlinuxfr]\nSigLevel = Never\nServer = http://repo.archlinux.fr/$arch\n\n' >> /etc/pacman.conf ; \
     	pacman -Syyuu --noconfirm ; \
-	pacman -S yaourt sudo net-tools nfs-utils sudo base-devel rsync  --noconfirm
+	pacman -S yaourt sudo net-tools nfs-utils sudo base-devel rsync unzip --noconfirm
 
 # add yaourt user and group
 RUN groupadd -r yaourt && \
@@ -17,7 +17,13 @@ RUN mkdir /tmp/yaourt && \
 
 
 USER yaourt
-RUN yaourt -S lizardfs --noconfirm
+#RUN yaourt -S lizardfs --noconfirm
+RUN 	mkdir -p /tmp/lizardfs ; cd /tmp/lizardfs ; \
+	curl 'https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=lizardfs' | \
+	sed 's/-DCMAKE_INSTALL_PREFIX/-DENABLE_DEBUG_LOG=TRUE \\\n-DENABLE_NFS_GANESHA=TRUE \\\n-DCMAKE_INSTALL_PREFIX/' > PKGBUILD ;\
+	curl 'https://aur.archlinux.org/cgit/aur.git/plain/lizardfs.install?h=lizardfs' > lizardfs.install ; \
+	curl 'https://aur.archlinux.org/cgit/aur.git/plain/cmath.patch?h=lizardfs' > cmath.patch ; \
+	makepkg -csi . --noconfirm
 
 USER root
 RUN pacman -S nano openssh --noconfirm ;\
