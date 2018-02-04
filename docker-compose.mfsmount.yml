@@ -1,0 +1,20 @@
+#
+#
+
+
+version: '3'
+services:
+  mfsmount:
+    image: hradec/docker_lizardfs    
+    restart: always 
+    #network_mode: host
+    privileged: yes
+    devices:
+      - /dev/fuse:/dev/fuse
+    environment:
+      # set the mfsmaster IP and port 
+      - MASTER_HOST=192.168.10.13
+      - MASTER_PORT=9420
+      # instruct the image as what server it has to impersonate!
+      - ACTION=mfsmount
+

@@ -36,10 +36,14 @@ createCFG(){
     # auto use whatever volume set in /mnt/
     # ====================================================================================
     if [ ! -e /etc/mfs/mfshdd.cfg ] ; then 
+        remove=""
+        if [ "$REMOVE" != "" ] ; then
+            remove="*"
+        fi
         for mnt in $(ls /mnt/)
         do
             echo Add mount $mnt
-            echo /mnt/$mnt >> /etc/mfs/mfshdd.cfg
+            echo "$remove/mnt/$mnt" >> /etc/mfs/mfshdd.cfg
             #  chown mfs:mfs $mnt
             #  chown mfs:mfs $mnt/.lock
         done
@@ -110,32 +114,34 @@ elif [ "$ACTION" == "cgi" ] ; then
     [ "$PORT" != "" ] && extra=" -P $PORT"
     run /usr/sbin/lizardfs-cgiserver $extra
 elif [ "$ACTION" == "mfsmount" ] ; then
-    mkdir /LIZARDFS
+    mkdir -p /LIZARDFS
     echo -e "\n/LIZARDFS          *(rw,fsid=0,async,no_root_squash,insecure,no_subtree_check,crossmnt)\n\n" > /etc/exports
     { 
         echo "[supervisord]"
         echo "nodaemon=true"
 
         echo "[program:mfsmount]"
-        echo "command=mfsmount -f -o allow_other,auto_unmount,nonempty /LIZARDFS"
+        echo "command=sh -c 'mfsmount -f -o allow_other,auto_unmount,nonempty /LIZARDFS'"
         echo "autorestart=true"
 
         echo "[program:rpcbind]"
-        echo "command=source /etc/conf.d/rpcbind && /usr/bin/rpcbind $RPCBIND_OPTIONS -w -f"
+        echo "command=sh -c 'source /etc/conf.d/rpcbind && /usr/bin/rpcbind $RPCBIND_OPTIONS -w -f'"
         echo "autorestart=true"
 
         echo "[program:rpcstatd]"
-        echo "command=export RPC_STATD_NO_NOTIFY=1 && /usr/sbin/rpc.statd"
+        echo "command=sh -c 'export RPC_STATD_NO_NOTIFY=1 && /usr/sbin/rpc.statd'"
         echo "autorestart=true"
 
         echo "[program:smnotify]"
-        echo "/usr/sbin/sm-notify"
+        echo "command=/usr/sbin/sm-notify"
         echo "autorestart=true"
 
         echo "[program:nfsd]"
-        echo "command=/usr/sbin/exportfs -r ; /usr/sbin/rpc.nfsd"
+        echo "command=sh -c '/usr/sbin/exportfs -r && /usr/sbin/rpc.nfsd'"
         echo "autorestart=true"
+        echo -e "\n\n"
     } > /etc/supervisord.conf 
+    cat /etc/supervisord.conf 
     supervisord -c /etc/supervisord.conf 
 else
     echo -e "
@@ -170,7 +176,7 @@ else
     The mfsmount action mounts lizarfs inside container and shares it over nfs. The idea is to initiate this container on a client, 
     and locally mount the the nfs share from the container.
     This has 2 advantages over just using mfsmount directly:
-        1. makes caching of small files and search path traversals much faster after a first run; (REALLY FASTER)
+        1. makes access of small files and search path traversals much faster after a first run; (REALLY FASTER)
         2. one can use cachefilesd to cache lizardfs files automatically on a local storage! 
     "
     #/bin/bash
