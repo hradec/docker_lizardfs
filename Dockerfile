@@ -15,13 +15,15 @@ RUN mkdir /tmp/yaourt && \
     echo 'yaourt ALL=(ALL) NOPASSWD: ALL' | EDITOR='tee -a' visudo 
 
 
+#    sed 's/-DCMAKE_INSTALL_PREFIX/-DENABLE_DEBUG_LOG=OFF \\\n-DENABLE_NFS_GANESHA=ON \\\n-DENABLE_TCMALLOC=ON \\\n-DCMAKE_INSTALL_PREFIX/' > PKGBUILD ;\
+
 
 USER yaourt
 #RUN yaourt -S lizardfs --noconfirm
 RUN yaourt -S judy --noconfirm
 RUN     mkdir -p /tmp/lizardfs ; cd /tmp/lizardfs ; \
     curl 'https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=lizardfs' | \
-    sed 's/-DCMAKE_INSTALL_PREFIX/-DENABLE_DEBUG_LOG=OFF \\\n-DENABLE_NFS_GANESHA=ON \\\n-DENABLE_TCMALLOC=ON \\\n-DCMAKE_INSTALL_PREFIX/' > PKGBUILD ;\
+    sed 's/-DCMAKE_INSTALL_PREFIX/-DENABLE_NFS_GANESHA=ON \\\n-DENABLE_TCMALLOC=ON \\\n-DCMAKE_INSTALL_PREFIX/' > PKGBUILD ;\
     curl 'https://aur.archlinux.org/cgit/aur.git/plain/lizardfs.install?h=lizardfs' > lizardfs.install ; \
     curl 'https://aur.archlinux.org/cgit/aur.git/plain/cmath.patch?h=lizardfs' > cmath.patch ; \
     makepkg -csi . --noconfirm
