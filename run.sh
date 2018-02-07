@@ -76,6 +76,13 @@ if [ "$MFSMASTER_PORT" == "" ] ; then
     export MFSMASTER_PORT=$default_port
 fi
 
+
+
+# Create /etc/mfs/mfs* files
+# ====================================================================================
+createCFG "$ACTION"
+
+
 # set master address
 # ====================================================================================
 echo "MASTER_HOST = mfsmaster"      >> /etc/mfs/mfschunkserver.cfg
@@ -89,9 +96,6 @@ echo "MASTER_PORT = $MFSMASTER_PORT"    >> /etc/mfs/mfsmetalogger.cfg
 
 
 
-# Create /etc/mfs/mfs* files
-# ====================================================================================
-createCFG "$ACTION"
 
 # ACTION - actions set by ACTION env var!
 # ====================================================================================
