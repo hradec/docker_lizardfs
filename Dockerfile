@@ -23,10 +23,11 @@ USER yaourt
 RUN yaourt -S judy --noconfirm
 RUN     mkdir -p /tmp/lizardfs ; cd /tmp/lizardfs ; \
     curl 'https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=lizardfs' | \
-    sed 's/-DCMAKE_INSTALL_PREFIX/-DENABLE_NFS_GANESHA=ON \\\n-DENABLE_TCMALLOC=ON \\\n-DCMAKE_INSTALL_PREFIX/' > PKGBUILD ;\
+    sed 's/-DCMAKE_INSTALL_PREFIX/-DENABLE_NFS_GANESHA=ON \\\n-DENABLE_TCMALLOC=ON \\\n-DCMAKE_INSTALL_PREFIX/' | \
+    sed 's/make -C/make -j 8 -C/' > PKGBUILD ;\
     curl 'https://aur.archlinux.org/cgit/aur.git/plain/lizardfs.install?h=lizardfs' > lizardfs.install ; \
     curl 'https://aur.archlinux.org/cgit/aur.git/plain/cmath.patch?h=lizardfs' > cmath.patch ; \
-    makepkg -csi . --noconfirm
+    export MAKEFLAGS="-j $(grep -c ^processor /proc/cpuinfo)" ; makepkg -csi . --noconfirm
 
 USER root
 RUN pacman -S nano openssh --noconfirm ;\
