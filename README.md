@@ -39,7 +39,7 @@ Examples:
       -e MASTER_HOST=<ip of master container/host> -e MASTER_PORT=9420 \
       -e MFS_CSSERV_LISTEN_PORT=9460 \
       -e MFS_LABEL=chunk \
-      -e MFS_LOCK_MEMORY=0 \
+      -e MFS_LOCK_MEMORY=1 \
       -e MFS_NR_OF_NETWORK_WORKERS=1 \
       -e MFS_NR_OF_HDD_WORKERS_PER_NETWORK_WORKER=10 \
       -e MFS_HDD_ADVISE_NO_CACHE=1 \
@@ -66,4 +66,18 @@ Examples:
       --name=cgi \
       -e MASTER_HOST=<ip of master container/host> -e MASTER_PORT=9420 \
       -e ACTION=cgi hradec/docker_lizardfs
+
+  shadow:
+  =======
+    docker stop shadow ; docker rm shadow 
+    docker run -d --restart always --net=host \
+      --name=shadow \
+      -v /<secure_persistent_shadow_path_to_metadata>:/var/lib/mfs:rw \
+      -e MFS_CUSTOM_GOALS_FILENAME=/var/lib/mfs/mfsgoals.cfg \
+      -e MFS_TOPOLOGY_FILENAME=/var/lib/mfs/mfstopology.cfg \
+      -e MFS_NO_ATIME=1 \
+      -e MFS_ENDANGERED_CHUNKS_PRIORITY=0.5 \
+      -e MFS_CHUNKS_REBALANCING_BETWEEN_LABELS=1 \
+      -e MFS_LOCK_MEMORY=1 \
+      -e ACTION=shadow hradec/docker_lizardfs
 ```
