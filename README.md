@@ -60,7 +60,7 @@ Examples:
       -e ACTION=meta hradec/docker_lizardfs
 
   cgi: (webui)
-  ================================
+  ============
     docker stop cgi ; docker rm cgi
     docker run -d --restart always --net=host \
       --name=cgi \
