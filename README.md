@@ -10,7 +10,7 @@ The envinroment variable `MFSMASTER` sets the IP for the LizardFS master server,
 
 To setup the type of server to run, use `-e ACTION=<server type>`. Choose from master, shadow, chunk, meta (metadata backup) and cgi (web ui).
 
-To setup parameters found in the conf files of each server, use `-e MFS_<parameter>=<value>`. For example, for LOCK_MEMORY=0, use `-e MFS_LOCK_MEMORY=0`.
+To setup parameters found in the conf files of each server, use `-e MFS_<parameter>=<value>`. For example, for `LOCK_MEMORY=0`, use `-e MFS_LOCK_MEMORY=0`.
 
 Examples:
 ```
