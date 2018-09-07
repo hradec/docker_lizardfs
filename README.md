@@ -34,7 +34,8 @@ Examples:
     docker stop chunk1 ; docker rm chunk1
     docker run -d --restart always --net=host \
       --name=chunk1 \
-      -v=/zfs_storage:/mnt/chunk1:rw 	\
+      -v=/zfs_storage_disk1:/mnt/chunk1_disk1:rw 	\
+      -v=/zfs_storage_disk2:/mnt/chunk1_disk2:rw 	\
       -e MASTER_HOST=<ip of master container/host> -e MASTER_PORT=9420 \
       -e MFS_CSSERV_LISTEN_PORT=9460 \
       -e MFS_LABEL=chunk \
